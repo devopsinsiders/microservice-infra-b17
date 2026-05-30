@@ -77,10 +77,6 @@ jobs:
         run: terraform init
         working-directory: ${{ env.TF_WORKING_DIR }}
 
-      - name: Create tfvars file
-        run: echo "${{ secrets.TFVARS }}" > terraform.tfvars
-        working-directory: ${{ env.TF_WORKING_DIR }}
-
       - name: Terraform Plan
         id: plan
         run: terraform plan -no-color -input=false -var-file=terraform.tfvars
@@ -135,10 +131,6 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ${{ env.TF_WORKING_DIR }}
-
-      - name: Create tfvars file
-        run: echo "${{ secrets.TFVARS }}" > terraform.tfvars
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: Terraform Apply
