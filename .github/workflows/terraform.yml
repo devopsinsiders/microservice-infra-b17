@@ -1,4 +1,4 @@
-name: 'Terraform CI/CD'
+name: 'Terraform CI/CD' # Triggering workflow after secret update
 
 on:
   push:
