@@ -1,6 +1,5 @@
 name: 'Terraform CI/CD' # Triggering workflow after secret update
 
-
 on:
   push:
     branches: [ "main" ]
