@@ -5,6 +5,20 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - apply
+          - destroy
+      confirm_destroy:
+        description: 'Type "yes" to confirm destroy (only for destroy action)'
+        required: false
+        type: string
 
 permissions:
   id-token: write # Required for OIDC authentication
@@ -114,7 +128,7 @@ jobs:
     name: 'Terraform Apply'
     needs: lint-and-scan
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || (github.event_name == 'workflow_dispatch' && inputs.action == 'apply')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -135,4 +149,31 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -auto-approve -input=false -var-file=terraform.tfvars
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+  terraform-destroy:
+    name: 'Terraform Destroy'
+    needs: lint-and-scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'destroy' && inputs.confirm_destroy == 'yes'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.ARM_CLIENT_ID }}
+          tenant-id: ${{ env.ARM_TENANT_ID }}
+          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve -input=false -var-file=terraform.tfvars
         working-directory: ${{ env.TF_WORKING_DIR }}
