@@ -1,4 +1,4 @@
-name: 'Terraform CI/CD'
+name: 'Dev'
 
 on:
   workflow_dispatch: 
